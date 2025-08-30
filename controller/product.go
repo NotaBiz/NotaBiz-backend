@@ -1,7 +1,11 @@
 package controller
 
-import "net/http"
+import (
+	"NotaBiz-backend/model/response"
 
-func GetProducts(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("products"))
+	"github.com/gin-gonic/gin"
+)
+
+func GetProducts(ctx *gin.Context) {
+	response.NewResponseSuccess(ctx, "products")
 }

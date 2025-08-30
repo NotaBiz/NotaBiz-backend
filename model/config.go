@@ -4,6 +4,7 @@ type (
 	ConfigData struct {
 		DbConfig
 		AppConfig
+		LoggerConfig
 	}
 
 	DbConfig struct {
@@ -15,8 +16,19 @@ type (
 	}
 
 	AppConfig struct {
-		Port int
-		JwtSecret string
+		Name          string
+		Version       string
+		Port          int
+		Environment   string
+		JwtSecret     string
 		JwtExpiration int
+	}
+
+	LoggerConfig struct {
+		Path       string
+		MaxSize    int
+		MaxBackups int
+		MaxAge     int
+		Compress   bool
 	}
 )

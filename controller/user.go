@@ -1,11 +1,15 @@
 package controller
 
-import "net/http"
+import (
+	"NotaBiz-backend/model/response"
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("get users"))
+	"github.com/gin-gonic/gin"
+)
+
+func GetUsers(ctx *gin.Context) {
+	response.NewResponseSuccessPaging(ctx, nil, nil)
 }
 
-func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("register users"))
+func RegisterUser(ctx *gin.Context) {
+	response.NewResponseCreated(ctx, "register users")
 }

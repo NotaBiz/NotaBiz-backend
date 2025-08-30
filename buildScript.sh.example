@@ -1,0 +1,28 @@
+OUTPUT_BINARY_WINDOWS="backend.exe"
+OUTPUT_BINARY_LINUX="backend"
+
+TARGET_DIR_WINDOWS="your-directory\backend"
+TARGET_DIR_LINUX="your-directory\backend"
+
+# Function to build and copy binaries
+build_and_copy() {
+    local output_binary=$1
+    local target_dir=$2
+    local goos_value=$3
+
+    echo "Building for $goos_value..."
+    GOOS=$goos_value go build -o $output_binary
+
+    if [ $? -eq 0 ]; then
+        cp $output_binary $target_dir/
+        echo "$goos_value build completed and binary copied to the target directory."
+    else
+        echo "Error: Failed to build for $goos_value."
+    fi
+}
+
+build_and_copy "$OUTPUT_BINARY_WINDOWS" "$TARGET_DIR_WINDOWS" "windows"
+build_and_copy "$OUTPUT_BINARY_LINUX" "$TARGET_DIR_LINUX" "linux"
+
+echo "Build process completed."
+read -p "Press Enter to continue..."

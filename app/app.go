@@ -1,62 +1,67 @@
 package app
 
 import (
+	"NotaBiz-backend/config"
+	"NotaBiz-backend/database"
 	"NotaBiz-backend/model"
 	"NotaBiz-backend/router"
-	"errors"
+	"time"
+
+	// "flag"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
 	"strconv"
 
-	"github.com/joho/godotenv"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func RunServer() {
-	configData, err := initEnv()
+	var configData *model.ConfigData = config.GetConfig()
+	// Connect to database
+	db, err := database.ConnectDB(configData)
 	if err != nil {
 		log.Fatal(err)
 	}
-	
-	routes := router.InitRouter()
+	// seedCommand := flag.Bool("seed", false, "seed the database")
+	// flag.Parse()
+	// if *seedCommand {
+	// 	database.Seed(db)
+	// }
+	conn, _ := db.DB()
+	defer func() {
+		if err = conn.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
-	fmt.Println("Running server on port " + strconv.Itoa(configData.AppConfig.Port))
-	err = http.ListenAndServe(":"+strconv.Itoa(configData.AppConfig.Port), routes)
+	// setup gin
+	if configData.AppConfig.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  false,
+		AllowOrigins:     []string{fmt.Sprintf("http://localhost:%d", configData.AppConfig.Port)},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           600 * time.Second,
+	}))
+	logger, err := SetupLogger(configData)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
+	defer logger.Sync()
+	r.Use(ResponseLogger(logger))
 
-func initEnv() (*model.ConfigData, error) {
-	var configData model.ConfigData
-	err := godotenv.Load()
-	if err != nil {
-		return nil, err
-	}
+	// setup router
+	router.InitRouter(r, string(configData.AppConfig.Version[0]))
 
-	configData.DbConfig.DbHost = os.Getenv("DB_HOST")
-	configData.DbConfig.DbPort = os.Getenv("DB_PORT")
-	configData.DbConfig.DbUser = os.Getenv("DB_USER")
-	configData.DbConfig.DbPassword = os.Getenv("DB_PASSWORD")
-	configData.DbConfig.DbName = os.Getenv("DB_NAME")
-	if configData.DbConfig.DbHost == "" || configData.DbConfig.DbPort == "" || configData.DbConfig.DbUser == "" || configData.DbConfig.DbPassword == "" || configData.DbConfig.DbName == "" {
-		return nil, errors.New("missing database environment variables")
-	}
-
-	port := os.Getenv("APP_PORT")
-	jwtExpiration := os.Getenv("JWT_EXPIRATION")
-	configData.AppConfig.JwtSecret = os.Getenv("JWT_SECRET")
-	if port == "" || jwtExpiration == "" || configData.AppConfig.JwtSecret == "" {
-		return nil, errors.New("missing application environment variables")
-	}
-	configData.AppConfig.Port, err = strconv.Atoi(port)
+	fmt.Printf("Running %s version %s on port %d\n", configData.AppConfig.Name, configData.AppConfig.Version, configData.AppConfig.Port)
+	err = r.Run(":" + strconv.Itoa(configData.AppConfig.Port))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	configData.AppConfig.JwtExpiration, err = strconv.Atoi(jwtExpiration)
-	if err != nil {
-		return nil, err
-	}
-	return &configData, nil
 }

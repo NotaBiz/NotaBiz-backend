@@ -2,29 +2,24 @@ package router
 
 import (
 	"NotaBiz-backend/controller"
-	"net/http"
+	"NotaBiz-backend/middleware"
+	"fmt"
+
+	"github.com/gin-gonic/gin"
 )
 
-func InitRouter() *http.ServeMux {
-	mux := http.NewServeMux()
-	apiGroup := map[string](map[string]http.HandlerFunc){
-		"/users":    usersHandler,
-		"/products": productsHandler,
-	}
+func InitRouter(r *gin.Engine, apiVersion string) {
+	api := r.Group(fmt.Sprintf("/api/v%s", apiVersion))
+	{
+		users := api.Group("/users")
+		{
+			users.GET("/", middleware.JwtAuthWithRoles("admin"), controller.GetUsers)
+			users.POST("/register", controller.RegisterUser)
+		}
 
-	for path, api := range apiGroup {
-		for method, handler := range api {
-			mux.HandleFunc("/api/v1"+path+method, handler)
+		products := api.Group("/products")
+		{
+			products.GET("/", controller.GetProducts)
 		}
 	}
-	return mux
-}
-
-var usersHandler = map[string]http.HandlerFunc{
-	"/":         controller.GetUsers,
-	"/register": controller.RegisterUser,
-}
-
-var productsHandler = map[string]http.HandlerFunc{
-	"/": controller.GetProducts,
 }
