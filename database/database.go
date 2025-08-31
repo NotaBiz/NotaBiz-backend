@@ -31,7 +31,16 @@ func ConnectDB(config *model.ConfigData) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&entity.User{})
+	// migrate db
+	err = db.AutoMigrate(
+		&entity.MasterRole{},
+		&entity.MasterSubscription{},
+		&entity.MasterCompany{},
+		&entity.MasterUser{},
+		&entity.Feedback{},
+		&entity.Transaction{},
+		&entity.Attachment{},
+	)
 	if err != nil {
 		log.Println("Error migrating database:", err)
 		return nil, err
@@ -73,6 +82,29 @@ func createDB(config *model.ConfigData) error {
 }
 
 func SeedData(db *gorm.DB) error {
+	err := db.Create(&RoleSeed).Error
+	if err != nil {
+		return err
+	}
+	log.Println("Seed roles data successfully")
 	
+	err = db.Create(&SubscriptionSeed).Error
+	if err != nil {
+		return err
+	}
+	log.Println("Seed subscription data successfully")
+
+	err = db.Create(&CompanySeed).Error
+	if err != nil {
+		return err
+	}
+	log.Println("Seed company data successfully")
+
+	err = db.Create(&UserSeed).Error
+	if err != nil {
+		return err
+	}
+	log.Println("Seed user data successfully")
+
 	return nil
 }

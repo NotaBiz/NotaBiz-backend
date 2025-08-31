@@ -12,5 +12,6 @@ func main() {
 		panic(err)
 	}
 	time.Local = loc
+	
 	app.RunServer()
 }

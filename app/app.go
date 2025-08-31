@@ -5,9 +5,8 @@ import (
 	"NotaBiz-backend/database"
 	"NotaBiz-backend/model"
 	"NotaBiz-backend/router"
+	"flag"
 	"time"
-
-	// "flag"
 	"fmt"
 	"log"
 	"strconv"
@@ -23,11 +22,12 @@ func RunServer() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// seedCommand := flag.Bool("seed", false, "seed the database")
-	// flag.Parse()
-	// if *seedCommand {
-	// 	database.Seed(db)
-	// }
+	// optional flag to seeding data
+	seedCommand := flag.Bool("seed", false, "seed the database")
+	flag.Parse()
+	if *seedCommand {
+		database.SeedData(db)
+	}
 	conn, _ := db.DB()
 	defer func() {
 		if err = conn.Close(); err != nil {
@@ -54,6 +54,7 @@ func RunServer() {
 		log.Fatal(err)
 	}
 	defer logger.Sync()
+	// logger to catch request response in api
 	r.Use(ResponseLogger(logger))
 
 	// setup router

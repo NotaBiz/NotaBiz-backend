@@ -8,17 +8,23 @@ import (
 	"gorm.io/plugin/soft_delete"
 )
 
-type User struct {
-	ID        uuid.UUID             `gorm:"type:uuid;primary_key;"`
-	Email     string                `gorm:"unique;not null;type:varchar(255);uniqueIndex:idx_email"`
-	Username  string                `gorm:"unique;not null;type:varchar(255);"`
-	Password  string                `gorm:"not null;type:varchar(255)"`
-	CreatedAt time.Time             `gorm:"default:now();type:timestamp"`
-	UpdatedAt time.Time             `gorm:"default:now();type:timestamp"`
-	DeletedAt soft_delete.DeletedAt `gorm:"softDelete:nano;default:0"`
+type MasterUser struct {
+	ID          uuid.UUID             `gorm:"type:uuid;primary_key;"`
+	Name        string                `gorm:"not null;type:varchar(255);"`
+	Email       string                `gorm:"not null;type:varchar(255);uniqueIndex:idx_deleted_at_email"`
+	Username    string                `gorm:"not null;type:varchar(255);"`
+	PhoneNumber string                `gorm:"not null;type:varchar(20);uniqueIndex:idx_deleted_at_phone_number"`
+	Password    string                `gorm:"not null;type:varchar(255)"`
+	CompanyID   uuid.UUID             `gorm:"type:uuid;not null"`
+	Company     MasterCompany         `gorm:"foreignKey:CompanyID"`
+	RoleID      uuid.UUID             `gorm:"type:uuid;not null"`
+	Role        MasterRole            `gorm:"foreignKey:RoleID"`
+	CreatedAt   time.Time             `gorm:"default:now();type:timestamp"`
+	UpdatedAt   time.Time             `gorm:"default:now();type:timestamp"`
+	DeletedAt   soft_delete.DeletedAt `gorm:"softDelete:nano;default:0;uniqueIndex:idx_deleted_at_email;uniqueIndex:idx_deleted_at_phone_number"`
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) error {
+func (u *MasterUser) BeforeCreate(tx *gorm.DB) error {
 	if u.ID == uuid.Nil {
 		u.ID = uuid.New()
 	}

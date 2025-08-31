@@ -1,0 +1,63 @@
+package database
+
+import (
+	"NotaBiz-backend/model/entity"
+
+	"github.com/google/uuid"
+)
+
+var (
+	RoleSeed = []entity.MasterRole{
+		{
+			ID:   uuid.New(),
+			Role: entity.RoleAdmin,
+		},
+		{
+			ID:   uuid.New(),
+			Role: entity.RoleOwner,
+		},
+		{
+			ID:   uuid.New(),
+			Role: entity.RoleStaff,
+		},
+	}
+
+	SubscriptionSeed = []entity.MasterSubscription{
+		{
+			ID:           uuid.New(),
+			Subscription: entity.SubscriptionFree,
+		},
+		{
+			ID:           uuid.New(),
+			Subscription: entity.SubscriptionBasic,
+		},
+		{
+			ID:           uuid.New(),
+			Subscription: entity.SubscriptionAdvance,
+		},
+	}
+
+	idOwner     = uuid.New()
+	CompanySeed = []entity.MasterCompany{
+		{
+			ID:             uuid.New(),
+			Company:        "my company",
+			SubscriptionID: SubscriptionSeed[2].ID,
+			CreatedBy:      &idOwner,
+			UpdatedBy:      &idOwner,
+		},
+	}
+
+	UserSeed = []entity.MasterUser{
+		{
+			ID:          idOwner,
+			Name:        "Jhon Doe",
+			Email:       "jhondoe@gmail.com",
+			Username:    "johndoe",
+			PhoneNumber: "08123456789",
+			Password:    "password",
+			CompanyID:   CompanySeed[0].ID,
+			RoleID:      RoleSeed[0].ID,
+		},
+	}
+)

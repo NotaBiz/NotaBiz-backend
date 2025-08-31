@@ -30,6 +30,7 @@ func (rw *responseWriter) WriteHeader(statusCode int) {
 }
 
 func SetupLogger(configData *model.ConfigData) (logging *zap.Logger, err error) {
+	// setup logger with lumberjack
 	logger := lumberjack.Logger{
 		Filename:   fmt.Sprintf("%s/log_%s.log", configData.LoggerConfig.Path, time.Now().Format("2006-01-02")),
 		MaxSize:    configData.LoggerConfig.MaxSize,
@@ -91,7 +92,6 @@ func ResponseLogger(logger *zap.Logger) gin.HandlerFunc {
 				)
 			}
 		} else {
-			// Log the response details using Zap
 			if c.Request.Method != "GET" && c.Request.Method != "OPTIONS" && writer.statusCode != 200 && writer.statusCode != 201 {
 				logger.Info("ResponseLog",
 					zap.String("path", c.Request.RequestURI),

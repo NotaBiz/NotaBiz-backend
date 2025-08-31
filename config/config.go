@@ -92,11 +92,3 @@ func loadLoggerConfig() {
 func GetConfig() *model.ConfigData {
 	return &Data
 }
-
-func GetJWTSecret() string {
-	return Data.AppConfig.JwtSecret
-}
-
-func GetDBConfig() model.DbConfig {
-	return Data.DbConfig
-}

@@ -1,3 +1,4 @@
 .env
 backend*
 buildScript.sh
+dataSeed.go

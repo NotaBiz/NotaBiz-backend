@@ -10,8 +10,8 @@ import (
 type Status string
 
 const (
-	Success Status = "success"
-	Error   Status = "error"
+	StatusSuccess Status = "success"
+	StatusError   Status = "error"
 )
 
 type Paging struct {
@@ -34,7 +34,7 @@ type Response struct {
 
 func NewResponseSuccessPaging(c *gin.Context, result interface{}, paging *Paging) {
 	c.JSON(http.StatusOK, Response{
-		Status:  Success,
+		Status:  StatusSuccess,
 		Code:    http.StatusOK,
 		Message: "Success",
 		Data:    result,
@@ -45,7 +45,7 @@ func NewResponseSuccessPaging(c *gin.Context, result interface{}, paging *Paging
 
 func NewResponseSuccess(c *gin.Context, result interface{}) {
 	c.JSON(http.StatusOK, Response{
-		Status:  Success,
+		Status:  StatusSuccess,
 		Code:    http.StatusOK,
 		Message: "Success",
 		Data:    result,
@@ -55,7 +55,7 @@ func NewResponseSuccess(c *gin.Context, result interface{}) {
 
 func NewResponseCreated(c *gin.Context, result interface{}) {
 	c.JSON(http.StatusCreated, Response{
-		Status:  Success,
+		Status:  StatusSuccess,
 		Code:    http.StatusCreated,
 		Message: "Created",
 		Data:    result,
@@ -65,7 +65,7 @@ func NewResponseCreated(c *gin.Context, result interface{}) {
 
 func NewResponseBadRequest(c *gin.Context, err string) {
 	c.JSON(http.StatusBadRequest, Response{
-		Status:  Error,
+		Status:  StatusError,
 		Code:    http.StatusBadRequest,
 		Message: err,
 		Timestamp: time.Now(),
@@ -74,7 +74,7 @@ func NewResponseBadRequest(c *gin.Context, err string) {
 
 func NewResponseError(c *gin.Context, err string) {
 	c.JSON(http.StatusInternalServerError, Response{
-		Status:  Error,
+		Status:  StatusError,
 		Code:    http.StatusInternalServerError,
 		Message: err,
 		Timestamp: time.Now(),
@@ -83,7 +83,7 @@ func NewResponseError(c *gin.Context, err string) {
 
 func NewResponseForbidden(c *gin.Context, err string) {
 	c.JSON(http.StatusForbidden, Response{
-		Status:  Error,
+		Status:  StatusError,
 		Code:    http.StatusForbidden,
 		Message: err,
 		Timestamp: time.Now(),
@@ -92,7 +92,7 @@ func NewResponseForbidden(c *gin.Context, err string) {
 
 func NewResponseUnauthorized(c *gin.Context, err string) {
 	c.JSON(http.StatusUnauthorized, Response{
-		Status:  Error,
+		Status:  StatusError,
 		Code:    http.StatusUnauthorized,
 		Message: err,
 		Timestamp: time.Now(),
