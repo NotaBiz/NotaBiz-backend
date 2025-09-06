@@ -8,16 +8,17 @@ import (
 )
 
 type JwtClaims struct {
-    Id       string
-    Username string
-    Email    string
-    Role    string
-    jwt.StandardClaims
+	Id           string
+	Username     string
+	Email        string
+	Role         string
+	Subscription string
+	jwt.StandardClaims
 }
 
 func (c JwtClaims) Valid() error {
-    if c.StandardClaims.ExpiresAt < time.Now().Unix() {
-        return errors.New("token has expired")
-    }
-    return nil
+	if c.StandardClaims.ExpiresAt < time.Now().Unix() {
+		return errors.New("token has expired")
+	}
+	return nil
 }

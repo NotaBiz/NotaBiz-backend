@@ -13,7 +13,7 @@ func InitRouter(r *gin.Engine, apiVersion string) {
 	{
 		users := api.Group("/users")
 		{
-			users.GET("/", middleware.JwtAuthWithRoles("admin"), controller.GetUsers)
+			users.GET("/", middleware.AdminOwner(), controller.GetUsers)
 			users.POST("/register", controller.RegisterUser)
 		}
 

@@ -4,7 +4,9 @@ import (
 	// "NotaBiz-backend/app"
 	"NotaBiz-backend/config"
 	"NotaBiz-backend/model"
+	"NotaBiz-backend/model/entity"
 	"NotaBiz-backend/model/response"
+	"slices"
 	"strings"
 	"time"
 
@@ -14,15 +16,16 @@ import (
 
 var jwtSigningMethod = jwt.SigningMethodHS256
 
-func GenerateTokenJwt(Id, name, email, role string, expiredAt int64) (string, error) {
+func GenerateTokenJwt(Id, username, email string, role entity.RoleName, subscription entity.SubscriptionName, expiredAt int64) (string, error) {
 	loginExpDuration := time.Duration(expiredAt) * time.Hour
 	issuedAt := time.Now()
 	myExpiresAt := issuedAt.Add(loginExpDuration).Unix()
 	claims := model.JwtClaims{
-		Id:       Id,
-		Username: name,
-		Email:    email,
-		Role:     role,
+		Id:           Id,
+		Username:     username,
+		Email:        email,
+		Role:         string(role),
+		Subscription: string(subscription),
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    config.GetConfig().AppConfig.Name,
 			ExpiresAt: myExpiresAt,
@@ -39,7 +42,7 @@ func GenerateTokenJwt(Id, name, email, role string, expiredAt int64) (string, er
 	return signedToken, nil
 }
 
-func JwtAuthWithRoles(userId ...string) gin.HandlerFunc {
+func ValidateJwtAuth(roles []entity.RoleName, subscription []entity.SubscriptionName) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if !strings.Contains(authHeader, "Bearer") {
@@ -48,7 +51,7 @@ func JwtAuthWithRoles(userId ...string) gin.HandlerFunc {
 			return
 		}
 
-		tokenString := strings.Replace(authHeader, "Bearer ", "", -1)
+		tokenString := strings.ReplaceAll(authHeader, "Bearer ", "")
 		claims := &model.JwtClaims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return config.GetConfig().AppConfig.JwtSecret, nil
@@ -65,12 +68,9 @@ func JwtAuthWithRoles(userId ...string) gin.HandlerFunc {
 		}
 
 		validRole := false
-		if len(userId) > 0 {
-			for _, role := range userId {
-				if role == claims.Role {
-					validRole = true
-					break
-				}
+		if len(roles) > 0 {
+			if slices.Contains(roles, entity.RoleName(claims.Role)) {
+				validRole = true
 			}
 		}
 		if !validRole {
@@ -79,7 +79,23 @@ func JwtAuthWithRoles(userId ...string) gin.HandlerFunc {
 			return
 		}
 
+		validSubscription := false
+		if len(subscription) > 0 {
+			if slices.Contains(subscription, entity.SubscriptionName(claims.Subscription)) {
+				validSubscription = true
+			}
+		}
+		if !validSubscription {
+			response.NewResponseUnauthorized(c, "Invalid subscription")
+			c.Abort()
+			return
+		}
+
 		c.Set("user", claims)
 		c.Next()
 	}
+}
+
+func AdminOwner() gin.HandlerFunc {
+	return ValidateJwtAuth([]entity.RoleName{entity.RoleAdmin, entity.RoleOwner}, []entity.SubscriptionName{})
 }
