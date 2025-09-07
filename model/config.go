@@ -1,3 +1,4 @@
+// Package model defines the structures used in the application.
 package model
 
 type (

@@ -1,7 +1,9 @@
+// Package middleware provides middleware functions for handling JWT authentication
+// and authorization in the application. It includes functionality for generating
+// JWT tokens and validating them based on roles and subscriptions.
 package middleware
 
 import (
-	// "NotaBiz-backend/app"
 	"NotaBiz-backend/config"
 	"NotaBiz-backend/model"
 	"NotaBiz-backend/model/entity"
@@ -16,6 +18,19 @@ import (
 
 var jwtSigningMethod = jwt.SigningMethodHS256
 
+// GenerateTokenJwt generates a JWT token for a user with the specified details.
+//
+// Parameters:
+//   - Id: The unique identifier of the user.
+//   - username: The username of the user.
+//   - email: The email address of the user.
+//   - role: The role of the user (e.g., Admin, User).
+//   - subscription: The subscription level of the user.
+//   - expiredAt: The expiration time of the token in hours.
+//
+// Returns:
+//   - A string containing the signed JWT token.
+//   - An error if the token generation fails.
 func GenerateTokenJwt(Id, username, email string, role entity.RoleName, subscription entity.SubscriptionName, expiredAt int64) (string, error) {
 	loginExpDuration := time.Duration(expiredAt) * time.Hour
 	issuedAt := time.Now()
@@ -42,6 +57,17 @@ func GenerateTokenJwt(Id, username, email string, role entity.RoleName, subscrip
 	return signedToken, nil
 }
 
+// ValidateJwtAuth is a middleware function that validates the JWT token in the
+// Authorization header of incoming requests. It checks the token's validity,
+// role, and subscription level.
+//
+// Parameters:
+//   - roles: A list of allowed roles for the request.
+//   - subscription: A list of allowed subscription levels for the request.
+//
+// Returns:
+//   - A Gin middleware handler function that validates the JWT token and
+//     aborts the request with an unauthorized response if validation fails.
 func ValidateJwtAuth(roles []entity.RoleName, subscription []entity.SubscriptionName) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -94,8 +120,4 @@ func ValidateJwtAuth(roles []entity.RoleName, subscription []entity.Subscription
 		c.Set("user", claims)
 		c.Next()
 	}
-}
-
-func AdminOwner() gin.HandlerFunc {
-	return ValidateJwtAuth([]entity.RoleName{entity.RoleAdmin, entity.RoleOwner}, []entity.SubscriptionName{})
 }

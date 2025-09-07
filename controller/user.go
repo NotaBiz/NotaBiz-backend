@@ -7,6 +7,7 @@ import (
 )
 
 func GetUsers(ctx *gin.Context) {
+	
 	response.NewResponseSuccessPaging(ctx, nil, nil)
 }
 

@@ -1,3 +1,5 @@
+// Package database provides functionality for connecting to a PostgreSQL database,
+// creating the database if it does not exist, running migrations, and seeding initial data.
 package database
 
 import (
@@ -14,6 +16,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// ConnectDB establishes a connection to the PostgreSQL database using the provided
+// configuration. It creates the database if it does not exist, runs migrations for
+// the defined entities, and returns a GORM database instance.
+//
+// Parameters:
+//   - config: A pointer to the ConfigData structure containing database configuration.
+//
+// Returns:
+//   - A pointer to the GORM database instance.
+//   - An error if the connection or migration fails.
 func ConnectDB(config *model.ConfigData) (*gorm.DB, error) {
 	err := createDB(config)
 	if err != nil {
@@ -31,7 +43,6 @@ func ConnectDB(config *model.ConfigData) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// migrate db
 	err = db.AutoMigrate(
 		&entity.MasterRole{},
 		&entity.MasterSubscription{},
@@ -49,6 +60,14 @@ func ConnectDB(config *model.ConfigData) (*gorm.DB, error) {
 	return db, nil
 }
 
+// createDB checks if the database specified in the configuration exists.
+// If it does not exist, it creates the database.
+//
+// Parameters:
+//   - config: A pointer to the ConfigData structure containing database configuration.
+//
+// Returns:
+//   - An error if the database creation fails.
 func createDB(config *model.ConfigData) error {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=postgres port=%s sslmode=disable TimeZone=Asia/Jakarta",
 		config.DbConfig.DbHost, config.DbConfig.DbUser, config.DbConfig.DbPassword, config.DbConfig.DbPort)
@@ -71,7 +90,6 @@ func createDB(config *model.ConfigData) error {
 		return nil
 	}
 
-	// Create DB
 	_, err = db.Exec("CREATE DATABASE " + config.DbConfig.DbName)
 	if err != nil {
 		return err
@@ -81,13 +99,20 @@ func createDB(config *model.ConfigData) error {
 	return nil
 }
 
+// SeedData seeds the database with initial data for roles, subscriptions, companies, and users.
+//
+// Parameters:
+//   - db: A pointer to the GORM database instance.
+//
+// Returns:
+//   - An error if any of the seeding operations fail.
 func SeedData(db *gorm.DB) error {
 	err := db.Create(&RoleSeed).Error
 	if err != nil {
 		return err
 	}
 	log.Println("Seed roles data successfully")
-	
+
 	err = db.Create(&SubscriptionSeed).Error
 	if err != nil {
 		return err

@@ -1,3 +1,5 @@
+// Package main implements the entry point for the NotaBiz-backend application.
+// It sets the local time zone to "Asia/Jakarta" and starts the server.
 package main
 
 import (
@@ -6,7 +8,6 @@ import (
 )
 
 func main() {
-	// set timezone local to GMT +7
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
 		panic(err)

@@ -1,3 +1,4 @@
+// Package entity defines the data models used in the application.
 package entity
 
 import (

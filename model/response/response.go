@@ -1,3 +1,6 @@
+// Package response provides utility functions and structures for creating
+// standardized HTTP responses in the application. It includes support for
+// success, error, and paginated responses.
 package response
 
 import (

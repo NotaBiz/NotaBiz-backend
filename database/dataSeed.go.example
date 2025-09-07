@@ -1,6 +1,7 @@
 package database
 
 import (
+	"NotaBiz-backend/helper"
 	"NotaBiz-backend/model/entity"
 
 	"github.com/google/uuid"
@@ -48,6 +49,7 @@ var (
 		},
 	}
 
+	hashedPassword, _ = helper.HashPassword("password")
 	UserSeed = []entity.MasterUser{
 		{
 			ID:          idOwner,
@@ -55,7 +57,7 @@ var (
 			Email:       "jhondoe@gmail.com",
 			Username:    "johndoe",
 			PhoneNumber: "08123456789",
-			Password:    "password",
+			Password:    hashedPassword,
 			CompanyID:   CompanySeed[0].ID,
 			RoleID:      RoleSeed[0].ID,
 		},
