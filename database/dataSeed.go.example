@@ -55,7 +55,6 @@ var (
 			ID:          idOwner,
 			Name:        "Jhon Doe",
 			Email:       "jhondoe@gmail.com",
-			Username:    "johndoe",
 			PhoneNumber: "08123456789",
 			Password:    hashedPassword,
 			CompanyID:   CompanySeed[0].ID,

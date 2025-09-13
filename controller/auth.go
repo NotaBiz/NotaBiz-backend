@@ -1,9 +1,11 @@
 package controller
 
 import (
+	// "NotaBiz-backend/model/request"
 	"NotaBiz-backend/model/response"
 	"NotaBiz-backend/service"
 	"NotaBiz-backend/service/serviceimpl"
+	// "NotaBiz-backend/utils"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -15,11 +17,11 @@ type AuthController struct{}
 
 var authService service.AuthService = serviceimpl.NewAuthService()
 
-func GoogleLogin(c *gin.Context) {
+func (AuthController) GoogleLogin(c *gin.Context) {
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
-func GoogleCallback(c *gin.Context) {
+func (AuthController) GoogleCallback(c *gin.Context) {
 	user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
 		log.Println("Goole auth failed: ", err)
@@ -38,3 +40,20 @@ func GoogleCallback(c *gin.Context) {
 	}
 	response.NewResponseSuccess(c, res)
 }
+
+// func (AuthController) Register(c *gin.Context) {
+// 	var RegisterRequest request.RegisterRequest
+// 	if !utils.ValidateRequest(c, &RegisterRequest) {
+// 		return
+// 	}
+// 	if RegisterRequest.Email == "" && RegisterRequest.PhoneNumber == "" {
+// 		response.NewResponseBadRequest(c, "Email or phone number is required")
+// 		return
+// 	}
+// 	res, err := authService.Register(RegisterRequest)
+// 	if err != nil {
+// 		response.NewResponseError(c, err.Error())
+// 		return
+// 	}
+// 	response.NewResponseSuccess(c, res)
+// }

@@ -23,7 +23,6 @@ var jwtSigningMethod = jwt.SigningMethodHS256
 //
 // Parameters:
 //   - Id: The unique identifier of the user.
-//   - username: The username of the user.
 //   - email: The email address of the user.
 //   - role: The role of the user (e.g., Admin, User).
 //   - subscription: The subscription level of the user.
@@ -32,14 +31,14 @@ var jwtSigningMethod = jwt.SigningMethodHS256
 // Returns:
 //   - A string containing the signed JWT token.
 //   - An error if the token generation fails.
-func GenerateTokenJwt(Id uuid.UUID, username, email string, role entity.RoleName, subscription entity.SubscriptionName) (string, error) {
+func GenerateTokenJwt(Id uuid.UUID, email, phoneNumber *string, role entity.RoleName, subscription entity.SubscriptionName) (string, error) {
 	loginExpDuration := time.Duration(config.GetConfig().AppConfig.JwtExpiration) * time.Second
 	issuedAt := time.Now()
 	myExpiresAt := issuedAt.Add(loginExpDuration).Unix()
 	claims := model.JwtClaims{
 		Id:           Id.String(),
-		Username:     username,
 		Email:        email,
+		PhoneNumber:  phoneNumber,
 		Role:         string(role),
 		Subscription: string(subscription),
 		StandardClaims: jwt.StandardClaims{

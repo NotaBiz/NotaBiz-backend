@@ -9,8 +9,8 @@ import (
 
 type JwtClaims struct {
 	Id           string
-	Username     string
-	Email        string
+	Email        *string
+	PhoneNumber  *string
 	Role         string
 	Subscription string
 	jwt.StandardClaims

@@ -22,7 +22,7 @@ func (AuthService) GoogleCallback(googleUser goth.User) (res *response.LoginResp
 	if err != nil {
 		return nil, err
 	}
-	token, err := middleware.GenerateTokenJwt(user.ID, user.Username, user.Email, entity.RoleName(user.Role.Role), entity.SubscriptionName(user.Company.Subscription.Subscription))
+	token, err := middleware.GenerateTokenJwt(user.ID, user.Email, user.PhoneNumber, entity.RoleName(user.Role.Role), entity.SubscriptionName(user.Company.Subscription.Subscription))
 	if err != nil {
 		return nil, err
 	}

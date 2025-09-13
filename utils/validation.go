@@ -20,7 +20,8 @@ var customErrorMessages = map[string]string{
 	"min":      "Field %s can't contain less than %s character",
 	"max":      "Field %s can't contain more than %s character",
 	"datetime": "Field %s must be a valid datetime",
-	"date":     "Field %s must be in YYYY-MM-DD format",
+	"email":    "Field %s must be a valid email address",
+	"e164":     "Field %s must be a valid e164 phone number",
 }
 
 // ValidateStruct validates the fields of a given struct based on the validation tags.

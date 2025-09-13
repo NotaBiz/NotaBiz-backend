@@ -27,7 +27,6 @@ func userToUserResponse(user *entity.MasterUser) *response.UserResponse {
 		ID:          user.ID,
 		Name:        user.Name,
 		Email:       user.Email,
-		Username:    user.Username,
 		PhoneNumber: user.PhoneNumber,
 		CompanyID:   user.CompanyID,
 		Company: response.CompanyResponse{

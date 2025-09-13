@@ -84,7 +84,7 @@ func SetupLogger(configData *model.ConfigData) (logging *zap.Logger, err error) 
 //   - path: request URI
 //   - method: HTTP method
 //   - status: HTTP status code
-//   - user: extracted from JWT claims (email/username/role) if available
+//   - user: extracted from JWT claims (email/role) if available
 //   - requestBody: body of the incoming request
 //   - response: response body sent back to the client
 //
@@ -125,7 +125,7 @@ func ResponseLogger(logger *zap.Logger) gin.HandlerFunc {
 					zap.String("path", c.Request.RequestURI),
 					zap.String("method", c.Request.Method),
 					zap.Int("status", writer.statusCode),
-					zap.String("user", fmt.Sprintf("%v/%v/%v", userData.Email, userData.Username, userData.Role)),
+					zap.String("user", fmt.Sprintf("%v/%v/%v", userData.Email, userData.Role)),
 					zap.String("requestBody", requestBody),
 					zap.String("response", writer.body.String()),
 				)

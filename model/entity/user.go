@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,10 +11,9 @@ import (
 
 type MasterUser struct {
 	ID          uuid.UUID             `gorm:"type:uuid;primary_key;"`
-	Name        string                `gorm:"not null;type:varchar(255);"`
-	Email       string                `gorm:"not null;type:varchar(255);uniqueIndex:idx_deleted_at_email"`
-	Username    string                `gorm:"not null;type:varchar(255);"`
-	PhoneNumber string                `gorm:"not null;type:varchar(20);uniqueIndex:idx_deleted_at_phone_number"`
+	Name        *string               `gorm:"type:varchar(255);"`
+	Email       *string               `gorm:"type:varchar(255);uniqueIndex:idx_deleted_at_email"`
+	PhoneNumber *string               `gorm:"type:varchar(20);uniqueIndex:idx_deleted_at_phone_number"`
 	Password    string                `gorm:"not null;type:varchar(255)"`
 	CompanyID   uuid.UUID             `gorm:"type:uuid;not null"`
 	Company     MasterCompany         `gorm:"foreignKey:CompanyID"`
@@ -29,4 +29,11 @@ func (u *MasterUser) BeforeCreate(tx *gorm.DB) error {
 		u.ID = uuid.New()
 	}
 	return nil
+}
+
+func (u *MasterUser) Validate() error {
+    if (u.Email == nil || *u.Email == "") && (u.PhoneNumber == nil || *u.PhoneNumber == "") {
+        return fmt.Errorf("either email or phone number must be provided")
+    }
+    return nil
 }

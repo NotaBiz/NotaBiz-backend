@@ -8,10 +8,9 @@ import (
 
 type UserResponse struct {
 	ID          uuid.UUID       `json:"id"`
-	Name        string          `json:"name"`
-	Email       string          `json:"email"`
-	Username    string          `json:"username"`
-	PhoneNumber string          `json:"phoneNumber"`
+	Name        *string         `json:"name,omitempty"`
+	Email       *string          `json:"email"`
+	PhoneNumber *string         `json:"phoneNumber,omitempty"`
 	CompanyID   uuid.UUID       `json:"companyId"`
 	Company     CompanyResponse `json:"company"`
 	RoleID      uuid.UUID       `json:"roleID"`
