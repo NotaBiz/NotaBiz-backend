@@ -17,12 +17,14 @@ type (
 	}
 
 	AppConfig struct {
-		Name          string
-		Version       string
-		Port          int
-		Environment   string
-		JwtSecret     string
-		JwtExpiration int
+		Name               string
+		Version            string
+		Port               int
+		Environment        string
+		JwtSecret          string
+		JwtExpiration      int
+		GoogleClientID     string
+		GoogleClientSecret string
 	}
 
 	LoggerConfig struct {

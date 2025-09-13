@@ -45,6 +45,7 @@ func RunServer() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	config.DB = db
 
 	// Optional: seed database when -seed flag is passed
 	seedCommand := flag.Bool("seed", false, "seed the database")
@@ -103,7 +104,7 @@ func RunServer() {
 	})
 
 	// Initialize routes
-	router.InitRouter(r, string(configData.AppConfig.Version[0]))
+	router.InitRouter(r)
 
 	// Start server
 	fmt.Printf("Running %s version %s on port %d\n",

@@ -5,17 +5,21 @@
 package config
 
 import (
-    "NotaBiz-backend/model"
-    "log"
-    "os"
-    "strconv"
+	"NotaBiz-backend/model"
+	"log"
+	"os"
+	"strconv"
 
-    "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 // Data is a global variable that holds the application's configuration data.
 // It is populated during the initialization of the application.
-var Data model.ConfigData
+var (
+    Data model.ConfigData
+    DB   *gorm.DB
+)
 
 // init initializes the configuration by calling the Load function.
 // This ensures that the configuration is loaded as soon as the package is imported.
@@ -65,10 +69,13 @@ func loadAppConfig() {
     jwtExpiration := os.Getenv("JWT_EXPIRATION")
     Data.AppConfig.JwtSecret = os.Getenv("JWT_SECRET")
     Data.AppConfig.Environment = os.Getenv("APP_ENVIRONMENT")
-    
-    if Data.AppConfig.Name == "" || Data.AppConfig.Version == "" || 
-       port == "" || jwtExpiration == "" || Data.AppConfig.JwtSecret == "" || 
-       Data.AppConfig.Environment == "" {
+    Data.AppConfig.GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
+    Data.AppConfig.GoogleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
+
+    if Data.AppConfig.Name == "" || Data.AppConfig.Version == "" ||
+       port == "" || jwtExpiration == "" || Data.AppConfig.JwtSecret == "" ||
+       Data.AppConfig.Environment == "" || Data.AppConfig.GoogleClientID == "" ||
+       Data.AppConfig.GoogleClientSecret == "" {
         log.Fatal("missing application environment variables")
     }
     

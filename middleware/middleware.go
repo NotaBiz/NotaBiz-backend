@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 var jwtSigningMethod = jwt.SigningMethodHS256
@@ -31,12 +32,12 @@ var jwtSigningMethod = jwt.SigningMethodHS256
 // Returns:
 //   - A string containing the signed JWT token.
 //   - An error if the token generation fails.
-func GenerateTokenJwt(Id, username, email string, role entity.RoleName, subscription entity.SubscriptionName, expiredAt int64) (string, error) {
-	loginExpDuration := time.Duration(expiredAt) * time.Hour
+func GenerateTokenJwt(Id uuid.UUID, username, email string, role entity.RoleName, subscription entity.SubscriptionName) (string, error) {
+	loginExpDuration := time.Duration(config.GetConfig().AppConfig.JwtExpiration) * time.Second
 	issuedAt := time.Now()
 	myExpiresAt := issuedAt.Add(loginExpDuration).Unix()
 	claims := model.JwtClaims{
-		Id:           Id,
+		Id:           Id.String(),
 		Username:     username,
 		Email:        email,
 		Role:         string(role),
