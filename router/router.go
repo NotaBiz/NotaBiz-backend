@@ -7,7 +7,9 @@ import (
 	"NotaBiz-backend/controller"
 	"NotaBiz-backend/middleware"
 	"NotaBiz-backend/model/entity"
+	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -21,13 +23,14 @@ import (
 //   - r: The Gin engine instance.
 //   - apiVersion: The version of the API to be included in the route paths.
 func InitRouter(r *gin.Engine) {
-	appConfig := config.GetConfig().AppConfig
+	appConfig := config.Data.AppConfig
 	apiGroup := fmt.Sprintf("/api/v%s", string(appConfig.Version[0]))
 	api := r.Group(apiGroup)
 	{
 		api.GET("/ping", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{"message": "pong"})
 		})
+		api.GET("/health", healthHandler)
 
 		goth.UseProviders(
 			google.New(
@@ -53,4 +56,36 @@ func InitRouter(r *gin.Engine) {
 			products.GET("/", controller.GetProducts)
 		}
 	}
+}
+
+func healthHandler(c *gin.Context) {
+	status := gin.H{
+		"status":   "healthy",
+		"services": gin.H{},
+	}
+
+	// Check Redis
+	ctx := context.Background()
+	if err := config.Redis.Ping(ctx).Err(); err != nil {
+		status["services"].(gin.H)["redis"] = "unhealthy"
+	} else {
+		status["services"].(gin.H)["redis"] = "healthy"
+	}
+
+	// Check Database
+	conn, _ := config.DB.DB()
+	if err := conn.Ping(); err != nil {
+		status["services"].(gin.H)["database"] = "unhealthy"
+	} else {
+		status["services"].(gin.H)["database"] = "healthy"
+	}
+
+	// Check RabbitMQ
+	if config.RabbitMQ.IsClosed() {
+		status["services"].(gin.H)["rabbitmq"] = "unhealthy"
+	} else {
+		status["services"].(gin.H)["rabbitmq"] = "healthy"
+	}
+
+	c.JSON(http.StatusOK, status)
 }

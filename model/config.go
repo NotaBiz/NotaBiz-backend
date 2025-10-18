@@ -6,6 +6,7 @@ type (
 		DbConfig
 		AppConfig
 		LoggerConfig
+		ServiceConfig
 	}
 
 	DbConfig struct {
@@ -33,5 +34,15 @@ type (
 		MaxBackups int
 		MaxAge     int
 		Compress   bool
+	}
+
+	ServiceConfig struct {
+		RedisUrl       string
+		RedisPassword  string
+		RabbitmqUrl    string
+		SmtpHost       string
+		SmtpPort       int
+		SenderEmail    string
+		SenderPassword string
 	}
 )

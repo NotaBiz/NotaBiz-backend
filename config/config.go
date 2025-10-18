@@ -11,15 +11,11 @@ import (
 	"strconv"
 
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 )
 
 // Data is a global variable that holds the application's configuration data.
 // It is populated during the initialization of the application.
-var (
-    Data model.ConfigData
-    DB   *gorm.DB
-)
+var Data model.ConfigData
 
 // init initializes the configuration by calling the Load function.
 // This ensures that the configuration is loaded as soon as the package is imported.
@@ -39,6 +35,7 @@ func Load() {
     loadDbConfig()
     loadAppConfig()
     loadLoggerConfig()
+    loadServiceConfig()
 }
 
 // loadDbConfig loads the database configuration from environment variables
@@ -118,9 +115,20 @@ func loadLoggerConfig() {
     Data.LoggerConfig.Compress = os.Getenv("LOG_COMPRESS") == "true"
 }
 
-// GetConfig returns a pointer to the `ConfigData` structure that holds
-// the application's configuration. This function provides a way to access
-// the configuration data from other parts of the application.
-func GetConfig() *model.ConfigData {
-    return &Data
+func loadServiceConfig() {
+    Data.ServiceConfig.RedisUrl = os.Getenv("REDIS_URL")
+    Data.ServiceConfig.RedisPassword = os.Getenv("REDIS_PASSWORD")
+    Data.ServiceConfig.RabbitmqUrl = os.Getenv("RABBITMQ_URL")
+    Data.ServiceConfig.SenderEmail = os.Getenv("SENDER_EMAIL")
+    Data.ServiceConfig.SenderPassword = os.Getenv("SENDER_PASSWORD")
+    Data.ServiceConfig.SmtpHost = os.Getenv("SMTP_HOST")
+    smtpPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+    if err != nil {
+        log.Fatal("invalid smtp port:", err)
+    }
+    Data.ServiceConfig.SmtpPort = smtpPort
+
+    if Data.ServiceConfig.RedisUrl == "" || Data.ServiceConfig.RabbitmqUrl == "" || Data.ServiceConfig.SenderEmail == "" || Data.ServiceConfig.SenderPassword == "" || Data.ServiceConfig.SmtpHost == "" || Data.ServiceConfig.SmtpPort == 0 {
+        log.Fatal("missing service environment variables")
+    }
 }

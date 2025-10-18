@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 type JwtClaims struct {
-	Id           string
+	Id           uuid.UUID
 	Email        *string
 	PhoneNumber  *string
 	Role         string

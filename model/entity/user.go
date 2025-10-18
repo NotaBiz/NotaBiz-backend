@@ -19,6 +19,7 @@ type MasterUser struct {
 	Company     MasterCompany         `gorm:"foreignKey:CompanyID"`
 	RoleID      uuid.UUID             `gorm:"type:uuid;not null"`
 	Role        MasterRole            `gorm:"foreignKey:RoleID"`
+	IsVerified  bool                  `gorm:"default:false;not null"`
 	CreatedAt   time.Time             `gorm:"default:now();type:timestamp"`
 	UpdatedAt   time.Time             `gorm:"default:now();type:timestamp"`
 	DeletedAt   soft_delete.DeletedAt `gorm:"softDelete:nano;default:0;uniqueIndex:idx_deleted_at_email;uniqueIndex:idx_deleted_at_phone_number"`
