@@ -32,17 +32,17 @@ var jwtSigningMethod = jwt.SigningMethodHS256
 //   - A string containing the signed JWT token.
 //   - An error if the token generation fails.
 func GenerateTokenJwt(Id uuid.UUID, email, phoneNumber *string, role entity.RoleName, subscription entity.SubscriptionName) (string, error) {
-	loginExpDuration := time.Duration(config.GetConfig().AppConfig.JwtExpiration) * time.Second
+	loginExpDuration := time.Duration(config.Data.AppConfig.JwtExpiration) * time.Second
 	issuedAt := time.Now()
 	myExpiresAt := issuedAt.Add(loginExpDuration).Unix()
 	claims := model.JwtClaims{
-		Id:           Id.String(),
+		Id:           Id,
 		Email:        email,
 		PhoneNumber:  phoneNumber,
 		Role:         string(role),
 		Subscription: string(subscription),
 		StandardClaims: jwt.StandardClaims{
-			Issuer:    config.GetConfig().AppConfig.Name,
+			Issuer:    config.Data.AppConfig.Name,
 			ExpiresAt: myExpiresAt,
 			IssuedAt:  issuedAt.Unix(),
 		},
@@ -50,7 +50,7 @@ func GenerateTokenJwt(Id uuid.UUID, email, phoneNumber *string, role entity.Role
 
 	token := jwt.NewWithClaims(jwtSigningMethod, claims)
 
-	signedToken, err := token.SignedString(config.GetConfig().AppConfig.JwtSecret)
+	signedToken, err := token.SignedString(config.Data.AppConfig.JwtSecret)
 	if err != nil {
 		return "", err
 	}
@@ -80,7 +80,7 @@ func ValidateJwtAuth(roles []entity.RoleName, subscription []entity.Subscription
 		tokenString := strings.ReplaceAll(authHeader, "Bearer ", "")
 		claims := &model.JwtClaims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return config.GetConfig().AppConfig.JwtSecret, nil
+			return config.Data.AppConfig.JwtSecret, nil
 		})
 		if err != nil {
 			response.NewResponseUnauthorized(c, "Invalid token")
@@ -118,6 +118,19 @@ func ValidateJwtAuth(roles []entity.RoleName, subscription []entity.Subscription
 		}
 
 		c.Set("user", claims)
+		c.Next()
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("X-Frame-Options", "DENY")
+		c.Header("Content-Security-Policy", "default-src 'self'; connect-src *; font-src *; script-src-elem * 'unsafe-inline'; img-src * data:; style-src * 'unsafe-inline';")
+		c.Header("X-XSS-Protection", "1; mode=block")
+		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		c.Header("Referrer-Policy", "strict-origin")
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("Permissions-Policy", "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()")
 		c.Next()
 	}
 }

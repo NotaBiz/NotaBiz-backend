@@ -9,10 +9,10 @@ package app
 
 import (
 	"NotaBiz-backend/config"
-	"NotaBiz-backend/database"
+	"NotaBiz-backend/middleware"
 	"NotaBiz-backend/model"
 	"NotaBiz-backend/router"
-	"flag"
+	"NotaBiz-backend/utils"
 	"fmt"
 	"log"
 	"strconv"
@@ -38,29 +38,18 @@ import (
 // encounters a fatal error.
 func RunServer() {
 	// Load configuration
-	var configData *model.ConfigData = config.GetConfig()
+	var configData *model.ConfigData = &config.Data
 
-	// Connect to the database
-	db, err := database.ConnectDB(configData)
+	// init services
+	err := config.InitServices()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to initialize services:", err)
 	}
-	config.DB = db
+	defer config.Cleanup()
 
-	// Optional: seed database when -seed flag is passed
-	seedCommand := flag.Bool("seed", false, "seed the database")
-	flag.Parse()
-	if *seedCommand {
-		database.SeedData(db)
-	}
+	// Start background workers
+	go utils.StartOTPWorkers(3) // 3 concurrent workers, each for email and whatsapp
 
-	// Ensure the database connection is properly closed
-	conn, _ := db.DB()
-	defer func() {
-		if err = conn.Close(); err != nil {
-			log.Fatal(err)
-		}
-	}()
 
 	// Configure Gin mode based on environment
 	if configData.AppConfig.Environment == "production" {
@@ -82,26 +71,16 @@ func RunServer() {
 		MaxAge:           600 * time.Second,
 	}))
 
-	// Setup application logger
-	logger, err := SetupLogger(configData)
+	// Rate size limiter
+	r.Use(middleware.MaxSizeMiddleware())
+	r.Use(middleware.RateLimitMiddleware())
+	logger, err := middleware.SetupLogger(configData)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer logger.Sync()
-
-	// Register middlewares
-	r.Use(ResponseLogger(logger))
-	r.Use(func(c *gin.Context) {
-		// Security headers
-		c.Header("X-Frame-Options", "DENY")
-		c.Header("Content-Security-Policy", "default-src 'self'; connect-src *; font-src *; script-src-elem * 'unsafe-inline'; img-src * data:; style-src * 'unsafe-inline';")
-		c.Header("X-XSS-Protection", "1; mode=block")
-		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-		c.Header("Referrer-Policy", "strict-origin")
-		c.Header("X-Content-Type-Options", "nosniff")
-		c.Header("Permissions-Policy", "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()")
-		c.Next()
-	})
+	r.Use(middleware.ResponseLogger(logger))
+	r.Use(middleware.CORSMiddleware())
 
 	// Initialize routes
 	router.InitRouter(r)

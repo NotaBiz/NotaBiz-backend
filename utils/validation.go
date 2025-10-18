@@ -109,7 +109,7 @@ func ValidateRequest[T any](c *gin.Context, input *T) bool {
 	}
 	errors := ValidateStruct(input)
 	if errors != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errors})
 		return false
 	}
 
