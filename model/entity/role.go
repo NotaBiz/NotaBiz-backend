@@ -18,7 +18,7 @@ const (
 
 type MasterRole struct {
 	ID        uuid.UUID             `gorm:"type:uuid;primaryKey"`
-	Role      RoleName              `gorm:"type:enum('owner','admin','staff');unique;not null"`
+	Role      RoleName              `gorm:"type:varchar(20);unique;not null"`
 	CreatedAt time.Time             `gorm:"default:now();type:timestamp"`
 	UpdatedAt time.Time             `gorm:"default:now();type:timestamp"`
 	DeletedAt soft_delete.DeletedAt `gorm:"softDelete:nano;default:0"`

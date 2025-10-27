@@ -1,6 +1,8 @@
 // Package model defines the structures used in the application.
 package model
 
+import "time"
+
 type (
 	ConfigData struct {
 		DbConfig
@@ -10,11 +12,14 @@ type (
 	}
 
 	DbConfig struct {
-		DbHost     string
-		DbPort     string
-		DbUser     string
-		DbPassword string
-		DbName     string
+		DbHost      string
+		DbPort      string
+		DbUser      string
+		DbPassword  string
+		DbName      string
+		MaxIdle     int
+		MaxConn     int
+		MaxLifeTime time.Duration
 	}
 
 	AppConfig struct {

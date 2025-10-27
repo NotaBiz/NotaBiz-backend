@@ -6,11 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
-	"github.com/redis/go-redis/v9"
-	amqp "github.com/rabbitmq/amqp091-go"
-	"gorm.io/gorm"
 	"github.com/go-redis/redis_rate/v10"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 var (
@@ -28,6 +29,12 @@ func InitServices() error {
 		return fmt.Errorf("database connection failed: %v", err)
 	}
 	DB = db
+	sqlDb, _ := db.DB()
+
+	//set max conn, idle and lifetime for all connections in gorm.DB object
+	sqlDb.SetConnMaxLifetime(Data.DbConfig.MaxLifeTime)
+	sqlDb.SetConnMaxIdleTime(time.Duration(Data.DbConfig.MaxIdle))
+	sqlDb.SetMaxOpenConns(Data.DbConfig.MaxConn)
 
 	// Optional: seed database when -seed flag is passed
 	seedCommand := flag.Bool("seed", false, "seed the database")
@@ -65,6 +72,7 @@ func InitServices() error {
 	if err != nil {
 		return fmt.Errorf("rabbitmq connection failed: %v", err)
 	}
+	RabbitMQ = conn
 
 	ch, err := conn.Channel()
 	if err != nil {
