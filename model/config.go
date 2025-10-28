@@ -18,6 +18,7 @@ type (
 		DbPassword  string
 		DbName      string
 		MaxIdle     int
+		MaxIdleTime time.Duration
 		MaxConn     int
 		MaxLifeTime time.Duration
 	}

@@ -35,6 +35,7 @@ func InitServices() error {
 	sqlDb.SetConnMaxLifetime(Data.DbConfig.MaxLifeTime)
 	sqlDb.SetConnMaxIdleTime(time.Duration(Data.DbConfig.MaxIdle))
 	sqlDb.SetMaxOpenConns(Data.DbConfig.MaxConn)
+	sqlDb.SetMaxIdleConns(Data.DbConfig.MaxIdle)
 
 	// Optional: seed database when -seed flag is passed
 	seedCommand := flag.Bool("seed", false, "seed the database")
@@ -60,7 +61,7 @@ func InitServices() error {
 	Redis = redisClient
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: Data.ServiceConfig.RedisUrl,
 	})
 	_ = rdb.FlushDB(ctx).Err()
 

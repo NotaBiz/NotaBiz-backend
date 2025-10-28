@@ -7,14 +7,21 @@ import (
 	"NotaBiz-backend/controller"
 	"NotaBiz-backend/middleware"
 	"NotaBiz-backend/model/entity"
+	"NotaBiz-backend/model/response"
+	"NotaBiz-backend/service"
+	"NotaBiz-backend/service/serviceimpl"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
+	"gorm.io/gorm"
 )
 
 // InitRouter initializes the application's routes and API endpoints.
@@ -25,6 +32,14 @@ import (
 func InitRouter(r *gin.Engine) {
 	appConfig := config.Data.AppConfig
 	apiGroup := fmt.Sprintf("/api/v%s", string(appConfig.Version[0]))
+	goth.UseProviders(
+		google.New(
+			appConfig.GoogleClientID,
+			appConfig.GoogleClientSecret,
+			fmt.Sprintf("http://localhost:%s%s/auth/google/callback", strconv.Itoa(appConfig.Port), apiGroup),
+			"email", "profile",
+		),
+	)
 	api := r.Group(apiGroup)
 	{
 		api.GET("/ping", func(ctx *gin.Context) {
@@ -32,18 +47,48 @@ func InitRouter(r *gin.Engine) {
 		})
 		api.GET("/health", healthHandler)
 
-		goth.UseProviders(
-			google.New(
-				appConfig.GoogleClientID,
-				appConfig.GoogleClientSecret,
-				fmt.Sprintf("http://localhost:%s%s/auth/google/callback", strconv.Itoa(appConfig.Port), apiGroup),
-				"email",
-			),
-		)
+		// authController := controller.NewAuthController()
 		auth := api.Group("/auth")
 		{
-			auth.GET("/google")
-			auth.GET("/google/callback")
+			auth.GET("/:provider", func(c *gin.Context) {
+				provider := c.Param("provider")
+				// ⚡ Inject provider into request context
+				req := c.Request.WithContext(context.WithValue(c.Request.Context(), gothic.ProviderParamKey, provider))
+				c.Request = req
+				fmt.Println("provider", c.Param("provider"))
+				gothic.BeginAuthHandler(c.Writer, c.Request)
+			})
+			auth.GET("/:provider/callback", func(c *gin.Context) {
+				provider := c.Param("provider")
+				// ⚡ Inject provider into request context
+				req := c.Request.WithContext(context.WithValue(c.Request.Context(), gothic.ProviderParamKey, provider))
+				c.Request = req
+				user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+				if err != nil {
+					log.Println("Goole auth failed: ", err)
+					response.NewResponseUnauthorized(c, err.Error())
+					return
+				}
+				fmt.Println("user", user)
+
+				var authService service.AuthService = serviceimpl.NewAuthService()
+				res, err := authService.GoogleCallback(user)
+				if err != nil {
+					if err == gorm.ErrRecordNotFound {
+						c.JSON(http.StatusForbidden, response.Response{
+							Status:    response.StatusError,
+							Code:      http.StatusForbidden,
+							Message:   "user not found",
+							Data:      user,
+							Timestamp: time.Now(),
+						})
+						return
+					}
+					response.NewResponseError(c, err.Error())
+					return
+				}
+				response.NewResponseSuccess(c, res)
+			})
 		}
 
 		users := api.Group("/users")

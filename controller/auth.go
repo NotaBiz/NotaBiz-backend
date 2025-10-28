@@ -19,8 +19,6 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/markbates/goth/gothic"
-	"gorm.io/gorm"
 )
 
 type AuthController struct{}
@@ -28,31 +26,15 @@ type AuthController struct{}
 var authService service.AuthService = serviceimpl.NewAuthService()
 
 func (AuthController) GoogleLogin(c *gin.Context) {
-	gothic.BeginAuthHandler(c.Writer, c.Request)
+
 }
 
 func (AuthController) GoogleCallback(c *gin.Context) {
-	user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
-	if err != nil {
-		log.Println("Goole auth failed: ", err)
-		response.NewResponseUnauthorized(c, err.Error())
-		return
-	}
 
-	res, err := authService.GoogleCallback(user)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			response.NewResponseUnauthorized(c, "user not found")
-			return
-		}
-		response.NewResponseError(c, err.Error())
-		return
-	}
-	response.NewResponseSuccess(c, res)
 }
 
 func (AuthController) RegisterOwner(c *gin.Context) {
-	var req request.RegisterRequest
+	var req request.RegisterOwnerRequest
 	if !utils.ValidateRequest(c, &req) {
 		return
 	}
@@ -160,4 +142,9 @@ func verifyOTPHandler(c *gin.Context) {
 func createUser(email, phoneNumber string) (*response.UserResponse, error) {
 	// Todo implement create user service
 	return nil, nil
+}
+
+func NewAuthController() AuthController {
+
+	return AuthController{}
 }

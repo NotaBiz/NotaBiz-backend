@@ -50,7 +50,7 @@ func GenerateTokenJwt(Id uuid.UUID, email, phoneNumber *string, role entity.Role
 
 	token := jwt.NewWithClaims(jwtSigningMethod, claims)
 
-	signedToken, err := token.SignedString(config.Data.AppConfig.JwtSecret)
+	signedToken, err := token.SignedString([]byte(config.Data.AppConfig.JwtSecret))
 	if err != nil {
 		return "", err
 	}

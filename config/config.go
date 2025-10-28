@@ -11,7 +11,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
+	"github.com/markbates/goth/gothic"
 )
 
 // Data is a global variable that holds the application's configuration data.
@@ -48,14 +50,16 @@ func loadDbConfig() {
 	Data.DbConfig.DbUser = os.Getenv("DB_USER")
 	Data.DbConfig.DbPassword = os.Getenv("DB_PASSWORD")
 	Data.DbConfig.DbName = os.Getenv("DB_NAME")
-	Data.DbConfig.MaxIdle, _ = strconv.Atoi(os.Getenv("DB_MAX_IDLE"))
-	Data.DbConfig.MaxConn, _ = strconv.Atoi(os.Getenv("DB_MAX_CONN"))
-	Data.DbConfig.MaxLifeTime, _ = time.ParseDuration(os.Getenv("DB_MAX_LIFE_TIME"))
+	Data.DbConfig.MaxIdle, _ = strconv.Atoi(os.Getenv("MAX_IDLE"))
+	Data.DbConfig.MaxConn, _ = strconv.Atoi(os.Getenv("MAX_CONN"))
+	Data.DbConfig.MaxLifeTime, _ = time.ParseDuration(os.Getenv("MAX_LIFE_TIME"))
+	Data.DbConfig.MaxIdleTime, _ = time.ParseDuration(os.Getenv("MAX_IDLE_TIME"))
 
 	if Data.DbConfig.DbHost == "" || Data.DbConfig.DbPort == "" ||
 		Data.DbConfig.DbUser == "" || Data.DbConfig.DbPassword == "" ||
 		Data.DbConfig.DbName == "" || Data.DbConfig.MaxIdle == 0 ||
-		Data.DbConfig.MaxConn == 0 || Data.DbConfig.MaxLifeTime == 0 {
+		Data.DbConfig.MaxConn == 0 || Data.DbConfig.MaxLifeTime == 0 ||
+		Data.DbConfig.MaxIdleTime == 0 {
 		log.Fatal("missing database environment variables")
 	}
 }
@@ -91,6 +95,12 @@ func loadAppConfig() {
 	if err != nil {
 		log.Fatal("invalid jwt expiration:", err)
 	}
+
+	key := []byte(os.Getenv("SESSION_SECRET"))
+	if len(key) == 0 {
+		log.Fatal("missing session secret")
+	}
+	gothic.Store = sessions.NewCookieStore(key)
 }
 
 // loadLoggerConfig loads the logger configuration from environment variables
