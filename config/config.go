@@ -11,9 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
-	"github.com/markbates/goth/gothic"
 )
 
 // Data is a global variable that holds the application's configuration data.
@@ -95,12 +93,6 @@ func loadAppConfig() {
 	if err != nil {
 		log.Fatal("invalid jwt expiration:", err)
 	}
-
-	key := []byte(os.Getenv("SESSION_SECRET"))
-	if len(key) == 0 {
-		log.Fatal("missing session secret")
-	}
-	gothic.Store = sessions.NewCookieStore(key)
 }
 
 // loadLoggerConfig loads the logger configuration from environment variables

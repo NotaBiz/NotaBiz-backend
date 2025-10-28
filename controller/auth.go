@@ -19,6 +19,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/markbates/goth/gothic"
+	"gorm.io/gorm"
 )
 
 type AuthController struct{}
@@ -26,11 +28,40 @@ type AuthController struct{}
 var authService service.AuthService = serviceimpl.NewAuthService()
 
 func (AuthController) GoogleLogin(c *gin.Context) {
-
+	provider := c.Param("provider")
+	req := c.Request.WithContext(context.WithValue(c.Request.Context(), gothic.ProviderParamKey, provider))
+	c.Request = req
+	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
 func (AuthController) GoogleCallback(c *gin.Context) {
+	provider := c.Param("provider")
+	req := c.Request.WithContext(context.WithValue(c.Request.Context(), gothic.ProviderParamKey, provider))
+	c.Request = req
+	user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	if err != nil {
+		log.Println("Goole auth failed: ", err)
+		response.NewResponseUnauthorized(c, err.Error())
+		return
+	}
+	fmt.Println("user", user)
 
+	res, err := authService.GoogleCallback(user)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusForbidden, response.Response{
+				Status:    response.StatusError,
+				Code:      http.StatusForbidden,
+				Message:   "user not found",
+				Data:      user,
+				Timestamp: time.Now(),
+			})
+			return
+		}
+		response.NewResponseError(c, err.Error())
+		return
+	}
+	response.NewResponseSuccess(c, res)
 }
 
 func (AuthController) RegisterOwner(c *gin.Context) {
