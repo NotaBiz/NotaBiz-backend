@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"github.com/swaggo/gin-swagger"
+	"github.com/swaggo/files"
 
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
@@ -35,9 +37,8 @@ func InitRouter(r *gin.Engine) {
 	)
 	api := r.Group(apiGroup)
 	{
-		api.GET("/ping", func(ctx *gin.Context) {
-			ctx.JSON(200, gin.H{"message": "pong"})
-		})
+		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		api.GET("/ping", pingHandler)
 		api.GET("/health", healthHandler)
 
 		authController := controller.NewAuthController()
@@ -59,6 +60,25 @@ func InitRouter(r *gin.Engine) {
 	}
 }
 
+// PingHandler godoc
+// @Summary      Ping server
+// @Description  Simple health check endpoint that returns "pong".
+// @Tags         Health
+// @Produce      json
+// @Success      200  {object}  map[string]string
+// @Router       /ping [get]
+func pingHandler(ctx *gin.Context) {
+    ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
+// healthHandler godoc
+// @Summary      Show health status
+// @Description  Returns status of application services (redis, database, rabbitmq).
+// @Tags         Health
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]string
+// @Router       /health [get]
 func healthHandler(c *gin.Context) {
 	status := gin.H{
 		"status":   "healthy",

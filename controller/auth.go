@@ -27,6 +27,12 @@ type AuthController struct{}
 
 var authService service.AuthService = serviceimpl.NewAuthService()
 
+// GoogleLogin godoc
+// @Summary      OAuth2 login redirect
+// @Description  Initiate OAuth2 login for the specified provider (e.g. google). Redirects the client to the provider's consent page.
+// @Tags         Auth
+// @Success      200  
+// @Router       /auth/google [get]
 func (AuthController) GoogleLogin(c *gin.Context) {
 	provider := c.Param("provider")
 	req := c.Request.WithContext(context.WithValue(c.Request.Context(), gothic.ProviderParamKey, provider))
@@ -34,6 +40,14 @@ func (AuthController) GoogleLogin(c *gin.Context) {
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
+// GoogleCallback godoc
+// @Summary      OAuth2 callback
+// @Description  OAuth2 callback endpoint. Exchanges code for user info and performs login/registration. Returns 200 on success, 401 if not authorized, 500 on server error.
+// @Tags         Auth
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /auth/google/callback [get]
 func (AuthController) GoogleCallback(c *gin.Context) {
 	provider := c.Param("provider")
 	req := c.Request.WithContext(context.WithValue(c.Request.Context(), gothic.ProviderParamKey, provider))
