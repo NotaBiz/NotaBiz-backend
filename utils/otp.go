@@ -3,11 +3,13 @@ package utils
 import (
 	"NotaBiz-backend/config"
 	"NotaBiz-backend/model"
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
+	"net/http"
 	"net/smtp"
 	"strconv"
 	"time"
@@ -157,7 +159,39 @@ func sendOTPByWhatsApp(phoneNumber, otp string) error {
 	message := fmt.Sprintf("Notabiz Registration Verification. \nYour OTP is: %s. This OTP will expire in 5 minutes.", otp)
 	log.Printf("Sending WhatsApp to %s: %s", phoneNumber, message)
 
-	// TODO: Implement WhatsApp API
+	request := map[string]string{
+		"target":  phoneNumber,
+		"message": message,
+	}
+	reqJson, err := json.Marshal(request)
+	if err != nil {
+		fmt.Printf("Failed to marshal WhatsApp request: %v \n", err)
+		return err
+	}
+
+	req, err := http.NewRequest("POST", "https://api.fonnte.com/send", bytes.NewBuffer(reqJson))
+	if err != nil {
+		fmt.Printf("Failed to send WhatsApp request: %v \n", err)
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", config.Data.ServiceConfig.FonnteToken)
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		var resBody model.WhatsAppResponse
+		if err := json.NewDecoder(res.Body).Decode(&resBody); err == nil {
+			fmt.Printf("WhatsApp API error: %t - %s \n", resBody.Status, resBody.Reason)
+		}
+		fmt.Printf("WhatsApp API returned non-200 status: %s \n", resBody.Reason)
+		return fmt.Errorf("WhatsApp API error: %s", resBody.Reason)
+	}
 
 	return nil
 }

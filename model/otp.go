@@ -20,3 +20,8 @@ type OTPData struct {
 	Attempts  int       `json:"attempts"`
 	Method    string    `json:"method"`
 }
+
+type WhatsAppResponse struct {
+	Reason string `json:"reason"`
+	Status bool `json:"status"`
+}

@@ -50,5 +50,6 @@ type (
 		SmtpPort       int
 		SenderEmail    string
 		SenderPassword string
+		FonnteToken    string
 	}
 )

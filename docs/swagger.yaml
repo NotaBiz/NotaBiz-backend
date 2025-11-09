@@ -1,4 +1,44 @@
 basePath: /api/v1
+definitions:
+  request.RegisterOwnerRequest:
+    properties:
+      company:
+        type: string
+      companyAddress:
+        type: string
+      companyDescription:
+        type: string
+      email:
+        type: string
+      method:
+        enum:
+        - email
+        - whatsapp
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phoneNumber:
+        type: string
+      subscriptionID:
+        type: string
+    required:
+    - company
+    - method
+    - password
+    - subscriptionID
+    type: object
+  request.VerifyOTPRequest:
+    properties:
+      email:
+        type: string
+      method:
+        type: string
+      otp:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -21,10 +61,8 @@ paths:
       description: Initiate OAuth2 login for the specified provider (e.g. google).
         Redirects the client to the provider's consent page.
       responses:
-        "302":
-          description: redirect
-          schema:
-            type: string
+        "200":
+          description: OK
       summary: OAuth2 login redirect
       tags:
       - Auth
@@ -52,6 +90,68 @@ paths:
               type: string
             type: object
       summary: OAuth2 callback
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      description: Register owner by email and phone number
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterOwnerRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register owner
+      tags:
+      - Auth
+  /auth/verify-otp:
+    post:
+      description: Verify OTP code for registration
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.VerifyOTPRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify OTP
       tags:
       - Auth
   /health:

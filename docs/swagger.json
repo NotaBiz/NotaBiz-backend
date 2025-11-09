@@ -26,11 +26,8 @@
                 ],
                 "summary": "OAuth2 login redirect",
                 "responses": {
-                    "302": {
-                        "description": "redirect",
-                        "schema": {
-                            "type": "string"
-                        }
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -52,6 +49,100 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Register owner by email and phone number",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register owner",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.RegisterOwnerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify-otp": {
+            "post": {
+                "description": "Verify OTP code for registration",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify OTP",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.VerifyOTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -121,6 +212,65 @@
                             }
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "request.RegisterOwnerRequest": {
+            "type": "object",
+            "required": [
+                "company",
+                "method",
+                "password",
+                "subscriptionID"
+            ],
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "companyAddress": {
+                    "type": "string"
+                },
+                "companyDescription": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "email",
+                        "whatsapp"
+                    ]
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "subscriptionID": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.VerifyOTPRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "otp": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
                 }
             }
         }

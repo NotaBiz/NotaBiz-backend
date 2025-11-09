@@ -134,8 +134,9 @@ func loadServiceConfig() {
 		log.Fatal("invalid smtp port:", err)
 	}
 	Data.ServiceConfig.SmtpPort = smtpPort
+	Data.ServiceConfig.FonnteToken = os.Getenv("FONNTE_TOKEN")
 
-	if Data.ServiceConfig.RedisUrl == "" || Data.ServiceConfig.RabbitmqUrl == "" || Data.ServiceConfig.SenderEmail == "" || Data.ServiceConfig.SenderPassword == "" || Data.ServiceConfig.SmtpHost == "" || Data.ServiceConfig.SmtpPort == 0 {
+	if Data.ServiceConfig.RedisUrl == "" || Data.ServiceConfig.RabbitmqUrl == "" || Data.ServiceConfig.SenderEmail == "" || Data.ServiceConfig.SenderPassword == "" || Data.ServiceConfig.SmtpHost == "" || Data.ServiceConfig.SmtpPort == 0 || Data.ServiceConfig.FonnteToken == "" {
 		log.Fatal("missing service environment variables")
 	}
 }

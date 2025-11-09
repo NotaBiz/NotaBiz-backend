@@ -57,7 +57,7 @@ func RateLimitMiddleware() gin.HandlerFunc {
 		// Request a token from Redis bucket
 		res, err := config.Limiter.Allow(ctx, key, rateLimit)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "rate limiter error"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "rate limiter error " + err.Error()})
 			return
 		}
 

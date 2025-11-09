@@ -15,7 +15,7 @@ type RegisterOwnerRequest struct {
 
 type VerifyOTPRequest struct {
 	Email       string `json:"email,omitempty"`
-	PhoneNumber string `json:"phone_number,omitempty"`
+	PhoneNumber string `json:"phoneNumber,omitempty"`
 	OTP         string `json:"otp"`
 	Method      string `json:"method"`
 }

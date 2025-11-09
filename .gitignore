@@ -4,3 +4,4 @@ backend*
 buildScript.sh
 dataSeed.go
 server.*
+files/

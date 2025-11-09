@@ -3,6 +3,7 @@ package middleware
 import (
 	"NotaBiz-backend/model"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -112,11 +113,16 @@ func ResponseLogger(logger *zap.Logger) gin.HandlerFunc {
 		c.Next()
 
 		// Prepare log fields
-		requestBody := string(bodyBytes)
 		user, _ := c.Get("user")
 		userData, ok := user.(*model.JwtClaims)
 
 		// Log only if request is not GET/OPTIONS and response status is not 200/201
+		var (
+			req map[string]interface{}
+			res map[string]interface{}
+		)
+		json.Unmarshal(bodyBytes, &req)
+		json.Unmarshal(writer.body.Bytes(), &res)
 		if c.Request.Method != "GET" && c.Request.Method != "OPTIONS" &&
 			writer.statusCode != 200 && writer.statusCode != 201 {
 			if ok {
@@ -125,9 +131,9 @@ func ResponseLogger(logger *zap.Logger) gin.HandlerFunc {
 					zap.String("path", c.Request.RequestURI),
 					zap.String("method", c.Request.Method),
 					zap.Int("status", writer.statusCode),
-					zap.String("user", fmt.Sprintf("%v/%v/%v", userData.Email, userData.Role)),
-					zap.String("requestBody", requestBody),
-					zap.String("response", writer.body.String()),
+					zap.String("user", fmt.Sprintf("%v/%v/%v", userData.Email, userData.PhoneNumber, userData.Role)),
+					zap.Any("requestBody", req),
+					zap.Any("response", res),
 				)
 			} else {
 				// Log with anonymous user
@@ -136,8 +142,8 @@ func ResponseLogger(logger *zap.Logger) gin.HandlerFunc {
 					zap.String("method", c.Request.Method),
 					zap.Int("status", writer.statusCode),
 					zap.String("user", "-/-"),
-					zap.String("requestBody", requestBody),
-					zap.String("response", writer.body.String()),
+					zap.Any("requestBody", req),
+					zap.Any("response", res),
 				)
 			}
 		}
