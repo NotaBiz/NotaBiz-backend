@@ -21,7 +21,7 @@ type MasterRole struct {
 	Role      RoleName              `gorm:"type:varchar(20);unique;not null"`
 	CreatedAt time.Time             `gorm:"default:now();type:timestamp"`
 	UpdatedAt time.Time             `gorm:"default:now();type:timestamp"`
-	DeletedAt soft_delete.DeletedAt `gorm:"softDelete:nano;default:0"`
+	DeletedAt soft_delete.DeletedAt `gorm:"softDelete:datetime"`
 	Users     []MasterUser          `gorm:"foreignKey:RoleID"`
 }
 

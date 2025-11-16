@@ -42,14 +42,14 @@ func RunServer() {
 
 	// init services
 	err := config.InitServices()
+	defer config.Cleanup()
 	if err != nil {
 		log.Fatal("Failed to initialize services:", err)
 	}
-	defer config.Cleanup()
 
 	// Start background workers
 	go utils.StartOTPWorkers(3) // 3 concurrent workers, each for email and whatsapp
-
+	go utils.RunScheduler()
 
 	// Configure Gin mode based on environment
 	if configData.AppConfig.Environment == "production" {

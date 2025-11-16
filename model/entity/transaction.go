@@ -27,7 +27,7 @@ type Transaction struct {
 	CreatedBy   *uuid.UUID            `gorm:"type:uuid"`
 	UpdatedAt   time.Time             `gorm:"default:now();type:timestamp"`
 	UpdatedBy   *uuid.UUID            `gorm:"type:uuid"`
-	DeletedAt   soft_delete.DeletedAt `gorm:"softDelete:nano;default:0"`
+	DeletedAt   soft_delete.DeletedAt `gorm:"softDelete:datetime"`
 	Attachments []Attachment          `gorm:"foreignKey:TransactionID"`
 }
 

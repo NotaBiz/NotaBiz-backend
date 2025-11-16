@@ -22,7 +22,7 @@ type MasterUser struct {
 	IsVerified  bool                  `gorm:"default:false;not null"`
 	CreatedAt   time.Time             `gorm:"default:now();type:timestamp"`
 	UpdatedAt   time.Time             `gorm:"default:now();type:timestamp"`
-	DeletedAt   soft_delete.DeletedAt `gorm:"softDelete:nano;default:0;uniqueIndex:idx_deleted_at_email;uniqueIndex:idx_deleted_at_phone_number"`
+	DeletedAt   soft_delete.DeletedAt `gorm:"softDelete:datetime;uniqueIndex:idx_deleted_at_email;uniqueIndex:idx_deleted_at_phone_number"`
 }
 
 func (u *MasterUser) BeforeCreate(tx *gorm.DB) error {
@@ -33,8 +33,8 @@ func (u *MasterUser) BeforeCreate(tx *gorm.DB) error {
 }
 
 func (u *MasterUser) Validate() error {
-    if (u.Email == nil || *u.Email == "") && (u.PhoneNumber == nil || *u.PhoneNumber == "") {
-        return fmt.Errorf("either email or phone number must be provided")
-    }
-    return nil
+	if (u.Email == nil || *u.Email == "") && (u.PhoneNumber == nil || *u.PhoneNumber == "") {
+		return fmt.Errorf("either email or phone number must be provided")
+	}
+	return nil
 }

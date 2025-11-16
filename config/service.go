@@ -3,7 +3,6 @@ package config
 import (
 	"NotaBiz-backend/database"
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -36,13 +35,6 @@ func InitServices() error {
 	sqlDb.SetConnMaxIdleTime(time.Duration(Data.DbConfig.MaxIdle))
 	sqlDb.SetMaxOpenConns(Data.DbConfig.MaxConn)
 	sqlDb.SetMaxIdleConns(Data.DbConfig.MaxIdle)
-
-	// Optional: seed database when -seed flag is passed
-	seedCommand := flag.Bool("seed", false, "seed the database")
-	flag.Parse()
-	if *seedCommand {
-		database.SeedData(db)
-	}
 
 	// Redis connection
 	redisClient := redis.NewClient(&redis.Options{

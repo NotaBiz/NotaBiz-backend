@@ -21,7 +21,7 @@ type MasterSubscription struct {
 	Subscription SubscriptionName      `gorm:"type:varchar(20);unique;not null"`
 	CreatedAt    time.Time             `gorm:"default:now();type:timestamp"`
 	UpdatedAt    time.Time             `gorm:"default:now();type:timestamp"`
-	DeletedAt    soft_delete.DeletedAt `gorm:"softDelete:nano;default:0"`
+	DeletedAt    soft_delete.DeletedAt `gorm:"softDelete:datetime"`
 	Companies    []MasterCompany       `gorm:"foreignKey:SubscriptionID"`
 }
 

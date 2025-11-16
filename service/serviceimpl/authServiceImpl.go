@@ -7,6 +7,8 @@ import (
 	"NotaBiz-backend/model/entity"
 	"NotaBiz-backend/model/request"
 	"NotaBiz-backend/model/response"
+	"NotaBiz-backend/repository"
+	"NotaBiz-backend/repository/repoimpl"
 	"NotaBiz-backend/utils"
 	"context"
 	"encoding/json"
@@ -24,7 +26,7 @@ func NewAuthService() *AuthService {
 	return &AuthService{}
 }
 
-// var authRepo repository.AuthRepository = repoimpl.
+var authRepo repository.AuthRepository = repoimpl.NewAuthRepository()
 
 // GoogleCallback implements service.AuthService.
 func (AuthService) GoogleCallback(googleUser goth.User) (res *response.LoginResponse, err error) {
@@ -42,6 +44,15 @@ func (AuthService) GoogleCallback(googleUser goth.User) (res *response.LoginResp
 
 // RegisterOwner implements service.AuthService.
 func (AuthService) RegisterOwner(req request.RegisterOwnerRequest) (err error) {
+	// register user with verified false
+	user := toMasterUser(req)
+	company := toMasterCompany(req)
+	err = authRepo.RegisterOwner(user, company)
+	if err != nil {
+		return err
+	}
+
+	// send OTP for verification
 	otp := utils.GenerateOTP()
 	otpKey := utils.GetOTPKey(req.Email, req.PhoneNumber, req.Method)
 	otpData := model.OTPData{
@@ -80,13 +91,13 @@ func (AuthService) RegisterOwner(req request.RegisterOwnerRequest) (err error) {
 
 // VerifyOTP implements service.AuthService.
 func (AuthService) VerifyOTP(req request.VerifyOTPRequest) (user *response.UserResponse, err error) {
-	// Get OTP from Redis
+	// verify OTP from redis
 	otpKey := utils.GetOTPKey(req.Email, req.PhoneNumber, req.Method)
 	ctx := context.Background()
 
 	otpJSON, err := config.Redis.Get(ctx, otpKey).Result()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("otp expired")
 	}
 
 	var otpData model.OTPData
@@ -94,13 +105,11 @@ func (AuthService) VerifyOTP(req request.VerifyOTPRequest) (user *response.UserR
 		return nil, err
 	}
 
-	// Check attempts limit
 	if otpData.Attempts >= 3 {
 		config.Redis.Del(ctx, otpKey)
 		return nil, fmt.Errorf("too many failed attempts")
 	}
 
-	// Verify OTP
 	if otpData.Code != req.OTP {
 		otpData.Attempts++
 		otpJSON, _ := json.Marshal(otpData)
@@ -109,25 +118,43 @@ func (AuthService) VerifyOTP(req request.VerifyOTPRequest) (user *response.UserR
 		return nil, fmt.Errorf("invalid OTP, attempts remaining: %d", 3-otpData.Attempts)
 	}
 
-	// Create user in database
-	user, err = createUser(req.Email, req.PhoneNumber)
+	// OTP verified, activate user
+	res, err := authRepo.VerifyUser(req.Email, req.PhoneNumber, req.Method)
 	if err != nil {
 		return nil, err
 	}
 
-	// Clean up OTP
 	config.Redis.Del(ctx, otpKey)
-	return
-}
-
-func createUser(email, phoneNumber string) (*response.UserResponse, error) {
-	// Todo implement create user service
-	return nil, nil
+	return userToUserResponse(&res), nil
 }
 
 func toLoginResponse(user *response.UserResponse, token string) *response.LoginResponse {
 	return &response.LoginResponse{
 		Token: token,
 		User:  *user,
+	}
+}
+
+func toMasterUser(req request.RegisterOwnerRequest) entity.MasterUser {
+	if req.Method == "email" {
+		return entity.MasterUser{
+			Name:     &req.Name,
+			Email:    &req.Email,
+			Password: req.Password,
+		}
+	} else {
+		return entity.MasterUser{
+			Name:        &req.Name,
+			PhoneNumber: &req.PhoneNumber,
+			Password:    req.Password,
+		}
+	}
+}
+
+func toMasterCompany(req request.RegisterOwnerRequest) entity.MasterCompany {
+	return entity.MasterCompany{
+		Company:     req.Company,
+		Description: &req.CompanyDescription,
+		Address:     &req.CompanyAddress,
 	}
 }
