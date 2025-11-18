@@ -49,9 +49,9 @@ func RateLimitMiddleware() gin.HandlerFunc {
 
 		var rateLimit redis_rate.Limit
 		if strings.HasPrefix(key, "ip:") {
-			rateLimit = redis_rate.PerMinute(15)
+			rateLimit = redis_rate.PerSecond(4)
 		} else {
-			rateLimit = redis_rate.PerMinute(60)
+			rateLimit = redis_rate.PerSecond(1)
 		}
 
 		// Request a token from Redis bucket

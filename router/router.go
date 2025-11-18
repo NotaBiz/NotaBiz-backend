@@ -52,12 +52,12 @@ func InitRouter(r *gin.Engine) {
 
 		users := api.Group("/users")
 		{
-			users.GET("/", middleware.ValidateJwtAuth([]entity.RoleName{entity.RoleAdmin, entity.RoleOwner}, []entity.SubscriptionName{}), controller.GetUsers)
+			users.GET("", middleware.ValidateJwtAuth([]entity.RoleName{entity.RoleAdmin, entity.RoleOwner}, []entity.SubscriptionName{}), controller.GetUsers)
 		}
 
 		products := api.Group("/products")
 		{
-			products.GET("/", controller.GetProducts)
+			products.GET("", controller.GetProducts)
 		}
 	}
 }
