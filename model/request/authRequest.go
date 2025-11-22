@@ -20,3 +20,8 @@ type VerifyOTPRequest struct {
 	OTP         string `json:"otp"`
 	Method      string `json:"method"`
 }
+
+type LoginRequest struct {
+	Identifier string `json:"identifier" validate:"required"`
+	Password   string `json:"password" validate:"required,min=8"`
+}

@@ -48,6 +48,7 @@ func InitRouter(r *gin.Engine) {
 			auth.GET("/:provider/callback", authController.GoogleCallback)
 			auth.POST("/register", authController.RegisterOwner)
 			auth.POST("/verify-otp", authController.VerifyOTPHandler)
+			auth.POST("/login", authController.Login)
 		}
 
 		users := api.Group("/users")

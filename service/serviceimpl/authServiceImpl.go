@@ -20,6 +20,20 @@ import (
 
 type AuthService struct{}
 
+// Login implements service.AuthService.
+func (a *AuthService) Login(req request.LoginRequest) (res *response.LoginResponse, err error) {
+	user, err := userService.GetUserByEmail(req.Identifier)
+	if err != nil {
+		return nil, err
+	}
+	token, err := middleware.GenerateTokenJwt(user.ID, user.Email, user.PhoneNumber, entity.RoleName(user.Role.Role), entity.SubscriptionName(user.Company.Subscription.Subscription))
+	if err != nil {
+		return nil, err
+	}
+
+	return toLoginResponse(user, token), nil
+}
+
 var userService UserService = UserService{}
 
 func NewAuthService() *AuthService {

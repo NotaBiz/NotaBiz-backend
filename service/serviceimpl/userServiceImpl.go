@@ -19,6 +19,14 @@ func (UserService) GetUserByEmail(email string) (res *response.UserResponse, err
 	return userToUserResponse(user), nil
 }
 
+func (UserService) GetUser(identifier string) (res *response.UserResponse, err error) {
+	user, err := userRepo.GetUser(identifier)
+	if err != nil {
+		return nil, err
+	}
+	return userToUserResponse(user), nil
+}
+
 func userToUserResponse(user *entity.MasterUser) *response.UserResponse {
 	company := user.Company
 	subs := company.Subscription

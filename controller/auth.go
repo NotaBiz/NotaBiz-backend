@@ -128,6 +128,19 @@ func (AuthController) VerifyOTPHandler(c *gin.Context) {
 	})
 }
 
+func (AuthController) Login(c *gin.Context) {
+	var req request.LoginRequest
+	if !utils.ValidateRequest(c, &req) {
+		return
+	}
+	res, err := authService.Login(req)
+	if err != nil {
+		response.NewResponseError(c, err.Error())
+		return
+	}
+	response.NewResponseSuccess(c, res)
+}
+
 func NewAuthController() AuthController {
 
 	return AuthController{}

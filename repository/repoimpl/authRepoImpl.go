@@ -32,11 +32,11 @@ func (a *AuthRepository) VerifyUser(email string, phoneNumber string, method str
 func (a *AuthRepository) RegisterOwner(user entity.MasterUser, company entity.MasterCompany) (err error) {
 	var existUser entity.MasterUser
 	if user.Email != nil {
-		if err := config.DB.Where("email = ?", *user.Email).Take(&existUser).Error; err != nil {
+		if err := config.DB.Where("email = ?", *user.Email).Find(&existUser).Error; err != nil {
 			return err
 		}
 	} else {
-		if err := config.DB.Where("phone_number = ?", *user.PhoneNumber).Take(&existUser).Error; err != nil {
+		if err := config.DB.Where("phone_number = ?", *user.PhoneNumber).Find(&existUser).Error; err != nil {
 			return err
 		}
 	}
@@ -45,7 +45,7 @@ func (a *AuthRepository) RegisterOwner(user entity.MasterUser, company entity.Ma
 	}
 
 	var subs entity.MasterSubscription
-	if err := config.DB.Select("id").Where("subscription_name = ?", entity.SubscriptionFree).First(&subs).Error; err != nil {
+	if err := config.DB.Select("id").Where("subscription = ?", entity.SubscriptionFree).First(&subs).Error; err != nil {
 		return err
 	}
 	var role entity.MasterRole
@@ -77,12 +77,13 @@ func (a *AuthRepository) RegisterOwner(user entity.MasterUser, company entity.Ma
 			return err
 		}
 	} else {
-		if err := tx.Model(entity.MasterCompany{}).Updates(map[string]interface{}{
+		if err := tx.Model(entity.MasterCompany{}).Where("id = ?", existUser.CompanyID).
+		Updates(map[string]interface{}{
 			"company":     company.Company,
 			"description": company.Description,
 			"address":     company.Address,
 			"updated_by":  existUser.ID,
-		}).Where("id = ?", existUser.CompanyID).Error; err != nil {
+		}).Error; err != nil {
 			return err
 		}
 
